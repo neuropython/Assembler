@@ -34,8 +34,12 @@ Signals:
 	loop:
 		lpm r16 , z+
 		cpi r16, 255
-
+		in r0, sreg
+		sbrc r0, 1 
+		rjmp theend
 		jmp ligh_Signals
+
+theend: jmp theend
 
 ligh_Signals:
 	cpi r16, 96
