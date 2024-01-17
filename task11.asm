@@ -17,6 +17,7 @@ start:
 	out SPL, r16 
 	ldi r16, high(stack)
 	out SPH, r16 
+
 	ldi r16, 0xff
 	in r16, DDRB
 	out PORTC, r16
@@ -24,20 +25,39 @@ start:
 
 test:
 	.org 0x0200 
-	array: .db 1, 70, 100, 110, 120, 130, 140, 150, 160, 170, 200, 0xff
+	array: .db 100, 110, 120, 130, 140, 150, 160, 170, 200
 	ldi zl, low(array*2)
 	ldi zh, high(array*2)
+
+	in r16, PINB 
+	com r16
+	cpi r16, 0
+	in r17, sreg
+	sbrc r17, 1
+	jmp test
+	jmp Signals
 
 
 .org 0x0400
 Signals:
+	ldi r17, 0 
+	in r16, PINB
+	mov r18,r16
+
+	calc_buttons:
+	inc r17
+	lsr r18
+	brbc 0, calc_buttons 
+	jmp loop
+
 	loop:
+		add r30, r17
 		lpm r16 , z+
 		cpi r16, 255
 		in r0, sreg
 		sbrc r0, 1 
 		rjmp theend
-		jmp ligh_Signals
+		call ligh_Signals
 
 theend: jmp theend
 
@@ -117,5 +137,3 @@ ligh_Signals:
 		ldi r17, 0b11111100
 		out PORTC, r17
 		rjmp loop
-
-
