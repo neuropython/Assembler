@@ -1,7 +1,7 @@
 ;
 ; AssemblerApplication1.asm
 ;
-; Created: 14.01.2024 14:52:33
+; Created: 24.01.2024 14:52:33
 ; Author : Damian
 ;
 
@@ -18,24 +18,18 @@ start:
 	ldi r16, high(stack)
 	out SPH, r16 
 
+	ldi r16, 0
+	out DDRB, r16
+
 	ldi r16, 0xff
-	in r16, DDRB
-	out PORTC, r16
+	out DDRC, r16
 	rjmp test 
 
 test:
 	.org 0x0200 
-	array: .db 100, 110, 120, 130, 140, 150, 160, 170, 200
+	array: .db 100,0, 110,0, 120,0, 130,0, 140,0, 150,0, 160,0, 170,0, 200,0
 	ldi zl, low(array*2)
 	ldi zh, high(array*2)
-
-	in r16, PINB 
-	com r16
-	cpi r16, 0
-	in r17, sreg
-	sbrc r17, 1
-	jmp test
-	jmp Signals
 
 
 .org 0x0400
@@ -46,13 +40,16 @@ Signals:
 
 	calc_buttons:
 	inc r17
+	cpi r17, 9
+	brbs 1, Signals
 	lsr r18
-	brbc 0, calc_buttons 
-	jmp loop
+	brbs 0, loop
+	jmp calc_buttons
 
 	loop:
+		lsl r17
 		add r30, r17
-		lpm r16 , z+
+		lpm r16 , z
 		cpi r16, 255
 		in r0, sreg
 		sbrc r0, 1 
