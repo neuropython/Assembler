@@ -1,0 +1,72 @@
+
+;
+; AssemblerApplication1.asm
+;
+; Created: 24.01.2024 14:52:33
+; Author : Damian
+;
+
+
+; Replace with your application code
+.equ stack = 0x0700
+.cseg
+.org 0
+rjmp start
+
+start:
+ldi r16, low(stack)
+out SPL, r16
+ldi r16, high(stack)
+out SPH, r16
+
+ldi r16, 0
+out DDRB, r16
+
+ldi r19, 0 
+
+ldi r16, 0xff
+out DDRC, r16
+loop:
+call signal
+jmp loop 
+
+
+signal:
+	in r16, DDRB
+	com r16 
+	mov r18, r16
+	andi r18, 0b000000001
+	cp r16, r18 
+	brbs 1, one_is_clicked
+	andi r18, 0b000000010
+	cp r16, r18 
+	brbs 1, two_is_clicked
+	
+one_is_clicked: 
+	in r16, DDRB
+	com r16 
+	mov r18,r16
+	andi r18, 0b000000001
+	cp r16, r18 
+	brbc 1, _add
+	jmp one_is_clicked
+
+two_is_clicked:
+	in r16, DDRB
+	com r16 
+	mov r18,r16
+	andi r18, 0b000000010
+	cp r16, r18 
+	brbc 1, _minus
+	jmp two_is_clicked
+	
+_minus:
+	dec r19
+	jmp show
+
+_add: 
+	inc r19
+	jmp show
+show:
+	out DDRC, r19 
+	ret 
